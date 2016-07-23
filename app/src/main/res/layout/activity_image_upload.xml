@@ -1,0 +1,45 @@
+<android.support.design.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/coordinator"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+    <RelativeLayout
+        android:paddingTop="?attr/actionBarSize"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <ImageButton
+            android:id="@+id/image_button_upload_preview"
+            android:layout_width="300dp"
+            android:layout_height="300dp"
+            android:layout_margin="10dp"
+            android:src="@mipmap/select_image"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true" />
+        <EditText
+            android:id="@+id/edit_text_description"
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:textSize="17sp"
+            android:gravity="top"
+            android:hint="Typing..."
+            android:background="#33FFFFFF"
+            android:paddingLeft="10dp"
+            android:textColor="#FF333333"
+            android:layout_below="@+id/image_button_upload_preview"
+            />
+    </RelativeLayout>
+    <android.support.design.widget.AppBarLayout
+        android:id="@+id/appBarLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <include
+            android:id="@+id/toolbar"
+            layout="@layout/view_main_toolbar" />
+    </android.support.design.widget.AppBarLayout>
+</android.support.design.widget.CoordinatorLayout>

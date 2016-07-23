@@ -1,0 +1,26 @@
+<resources>
+    <string name="app_name">Gori</string>
+    <string name="login_text">로그인</string>
+    <string name="login_text_in_sign_up">이미 계정이 있다면 이곳으로</string>
+    <string name="sign_up_in_login_text">계정이 없다면 이곳으로</string>
+    <string name="sign_up_text">회원가입</string>
+    <string name="sign_up_confirm_text">가입하기</string>
+    <string name="sign_up_email_text">이메일로 가입하기</string>
+    <string name="logo_text">고리를 이용하여 주변의 사람들과 소통해봐요</string>
+    <string name="signup_email_hint">이메일 [ email ]</string>
+    <string name="login_username_hint">사용자 이름 [ username ]</string>
+    <string name="login_password_hint">비밀번호</string>
+    <string name="login_password2_hint">비밀번호 확인</string>
+    <string name="select_file">Select file to upload</string>
+    <string name="upload_progress">Upload progress: %s</string>
+    <string name="cancel_upload">Cancel upload</string>
+
+    <plurals name="likes_count">
+        <item quantity="one">%d like</item>
+        <item quantity="other">%d likes</item>
+    </plurals>
+    <string-array name="user_photos">
+        <item>http://scontent-a-fra.cdninstagram.com/hphotos-xpf1/t51.2885-15/s306x306/e15/10665483_429615813855717_1490926670_n.jpg</item>
+    </string-array>
+    <string name="user_profile_photo">http://igcdn-photos-f-a.akamaihd.net/hphotos-ak-xpa1/t51.2885-19/929118_455075441302693_1605108410_a.jpg</string>
+</resources>
