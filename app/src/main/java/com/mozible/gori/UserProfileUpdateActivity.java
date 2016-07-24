@@ -15,6 +15,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 import com.mozible.gori.fragments.UserProfileFragment;
 import com.mozible.gori.models.PostResult;
 import com.mozible.gori.models.UserProfile;
@@ -25,7 +27,7 @@ import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 
-public class UserProfileUpdateActivity extends AppCompatActivity implements ActivitySnack{
+public class UserProfileUpdateActivity extends AppCompatActivity implements ActivitySnack, ActivityGA{
     private EditText edit_text_description;
     private EditText edit_text_job;
     private Button button_apply;
@@ -38,6 +40,10 @@ public class UserProfileUpdateActivity extends AppCompatActivity implements Acti
         UserProfile userProfile = UserProfile.getObjectFromJSonObject(getIntent().getExtras().getString("USER_PROFILE", ""));
         initViews(userProfile);
 
+        Tracker tracker = ((GoriApplication) getApplication())
+                .getTracker(GoriApplication.TrackerName.APP_TRACKER);
+        tracker.setScreenName("UserProfileUpdateActivity");
+        tracker.send(new HitBuilders.AppViewBuilder().build());
     }
 
     private void initViews(UserProfile userProfile) {
@@ -54,6 +60,7 @@ public class UserProfileUpdateActivity extends AppCompatActivity implements Acti
             public void onClick(View v) {
                 if(edit_text_description.getText() != null && edit_text_description.getText().length() > 0 &&
                         edit_text_job.getText() != null && edit_text_job.getText().length() > 0) {
+                    sendGA("user", "modify", "request");
                     String session = GoriPreferenceManager.getInstance(UserProfileUpdateActivity.this).getSession();
                     ServerInterface api = GoriApplication.getInstance().getServerInterface();
                     api.updateMyInfo(session, 1, "nick_name", edit_text_description.getText().toString(),
@@ -62,9 +69,11 @@ public class UserProfileUpdateActivity extends AppCompatActivity implements Acti
                                 @Override
                                 public void success(PostResult s, Response response) {
                                     if(s.status.toLowerCase().equals("success")) {
+                                        sendGA("user", "modify", "success");
                                         showSnackbar("profile info update success");
                                         finish();
                                     } else {
+                                        sendGA("user", "modify", "fail:" + s.desc);
                                         showSnackbar(s.desc);
                                     }
                                 }
@@ -72,6 +81,7 @@ public class UserProfileUpdateActivity extends AppCompatActivity implements Acti
                                 @Override
                                 public void failure(RetrofitError error) {
                                     showSnackbar("profile info update failed!");
+                                    sendGA("user", "modify", "fail:" + error.getMessage());
                                 }
                             });
                 } else {
@@ -85,4 +95,18 @@ public class UserProfileUpdateActivity extends AppCompatActivity implements Acti
         Snackbar.make(coordinator, text, Snackbar.LENGTH_SHORT).show();
     }
 
+    @Override
+    public void sendGA(String category, String action, String label) {
+        //GA
+        try {
+            Tracker tracker = ((GoriApplication) getApplication())
+                    .getTracker(GoriApplication.TrackerName.APP_TRACKER);
+            tracker.send(new HitBuilders.EventBuilder()
+                    .setCategory(category)
+                    .setAction(action)
+                    .setLabel(label).build());
+        } catch(Exception ex) {
+            ex.printStackTrace();
+        }
+    }
 }

@@ -11,6 +11,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 
+import com.mozible.gori.ActivityGA;
 import com.mozible.gori.LoginActivity;
 import com.mozible.gori.R;
 import com.mozible.gori.tasks.SignUpTask;
@@ -56,6 +57,8 @@ public class LoginSignupFragment extends Fragment {
                     Snackbar.with(getActivity())
                             .text("비밀번호를 제대로 입력해 주세요")
                             .show(getActivity());
+                    ((ActivityGA)getActivity()).sendGA("user", "signup", "request fail : 비밀번호를 제대로 입력해 주세요");
+
                 } else {
                     edit_text_email.setEnabled(false);
                     edit_text_username.setEnabled(false);
@@ -64,6 +67,8 @@ public class LoginSignupFragment extends Fragment {
                     sign_up_button.setEnabled(false);
                     login_button.setEnabled(false);
                     startSignUpTask(email, username, password);
+                    ((ActivityGA)getActivity()).sendGA("user", "signup", "request");
+
                 }
                 hideKeyboard();
             }
@@ -108,14 +113,20 @@ public class LoginSignupFragment extends Fragment {
                         .show(getActivity());
                 LoginActivity loginActivity = (LoginActivity)getActivity();
                 loginActivity.changeLoginFragment();
+                ((ActivityGA)getActivity()).sendGA("user", "signup", "success");
+
             } else if(STATUS == GoriConstants.STATUS.ERROR) {
                 switch(errorCode) {
                     case 200:
+                        ((ActivityGA)getActivity()).sendGA("user", "signup", "fail : 이미 사용중인 username 입니다");
+
                         Snackbar.with(getActivity())
                                 .text("이미 사용중인 username 입니다")
                                 .show(getActivity());
                         break;
                     case 201:
+                        ((ActivityGA)getActivity()).sendGA("user", "signup", "fail : 이미 사용중인 email 입니다");
+
                         Snackbar.with(getActivity())
                                 .text("이미 사용중인 email 입니다")
                                 .show(getActivity());

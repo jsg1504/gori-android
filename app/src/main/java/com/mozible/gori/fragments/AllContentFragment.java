@@ -13,6 +13,7 @@ import android.widget.ListView;
 
 import com.handmark.pulltorefresh.library.PullToRefreshBase;
 import com.handmark.pulltorefresh.library.PullToRefreshListView;
+import com.mozible.gori.ActivityGA;
 import com.mozible.gori.GoriApplication;
 import com.mozible.gori.MainActivity;
 import com.mozible.gori.R;
@@ -127,6 +128,7 @@ public class AllContentFragment extends Fragment {
         public void onClick(View v) {
             switch (v.getId()) {
                 case R.id.relative_layout_profile:
+                    ((ActivityGA)getActivity()).sendGA("user profile", "click", "");
                     Intent i = new Intent(getActivity(), UserProfileActivity.class);
                     int position = (Integer)v.getTag();
                     Content content = (Content) mMainAdapter.getItem(position);

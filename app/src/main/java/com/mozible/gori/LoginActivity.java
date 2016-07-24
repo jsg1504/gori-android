@@ -12,11 +12,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.RelativeLayout;
 
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 import com.mozible.gori.fragments.LoginLoginFragment;
 import com.mozible.gori.fragments.LoginMainFragment;
 import com.mozible.gori.fragments.LoginSignupFragment;
 
-public class LoginActivity extends AppCompatActivity {
+public class LoginActivity extends AppCompatActivity implements ActivityGA{
 
     private final int STATE_MAIN = 0;
     private final int STATE_LOGIN = 1;
@@ -32,6 +34,11 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         initViews();
+
+        Tracker tracker = ((GoriApplication) getApplication())
+                .getTracker(GoriApplication.TrackerName.APP_TRACKER);
+        tracker.setScreenName("LoginActivity");
+        tracker.send(new HitBuilders.AppViewBuilder().build());
 
     }
 
@@ -110,5 +117,20 @@ public class LoginActivity extends AppCompatActivity {
         transaction.replace(R.id.fragment_layout, newFragment);
 
         transaction.commit();
+    }
+
+    @Override
+    public void sendGA(String category, String action, String label) {
+        //GA
+        try {
+            Tracker tracker = ((GoriApplication) getApplication())
+                    .getTracker(GoriApplication.TrackerName.APP_TRACKER);
+            tracker.send(new HitBuilders.EventBuilder()
+                    .setCategory(category)
+                    .setAction(action)
+                    .setLabel(label).build());
+        } catch(Exception ex) {
+            ex.printStackTrace();
+        }
     }
 }

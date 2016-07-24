@@ -19,6 +19,8 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 import com.mozible.gori.models.PostResult;
 import com.mozible.gori.utils.GoriPreferenceManager;
 import com.mozible.gori.utils.ServerInterface;
@@ -31,7 +33,7 @@ import retrofit.RetrofitError;
 import retrofit.client.Response;
 import retrofit.mime.TypedFile;
 
-public class ImageUploadActivity extends AppCompatActivity {
+public class ImageUploadActivity extends AppCompatActivity implements ActivityGA{
     private Toolbar toolbar;
     private ImageButton image_button_upload_preview;
     private EditText edit_text_description;
@@ -45,6 +47,11 @@ public class ImageUploadActivity extends AppCompatActivity {
         setContentView(R.layout.activity_image_upload);
         initView();
         initContentUpload1();
+
+        Tracker tracker = ((GoriApplication) getApplication())
+                .getTracker(GoriApplication.TrackerName.APP_TRACKER);
+        tracker.setScreenName("ImageUploadActivity");
+        tracker.send(new HitBuilders.AppViewBuilder().build());
     }
 
     private void initView() {
@@ -184,6 +191,21 @@ public class ImageUploadActivity extends AppCompatActivity {
     }
     public void showSnackbar(String text) {
         Snackbar.make(coordinator, text, Snackbar.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void sendGA(String category, String action, String label) {
+        //GA
+        try {
+            Tracker tracker = ((GoriApplication) getApplication())
+                    .getTracker(GoriApplication.TrackerName.APP_TRACKER);
+            tracker.send(new HitBuilders.EventBuilder()
+                    .setCategory(category)
+                    .setAction(action)
+                    .setLabel(label).build());
+        } catch(Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
 }

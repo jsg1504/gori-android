@@ -12,6 +12,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 
+import com.mozible.gori.ActivityGA;
 import com.mozible.gori.GoriApplication;
 import com.mozible.gori.LoginActivity;
 import com.mozible.gori.MainActivity;
@@ -66,6 +67,7 @@ public class LoginLoginFragment extends Fragment {
                     Snackbar.with(getActivity())
                             .text("username, password를 입력해 주세요")
                             .show(getActivity());
+                    ((ActivityGA)getActivity()).sendGA("user", "login", "request fail : username, password를 입력해 주세요");
                 } else {
                     startLoginTask(username, password);
                     edit_text_username.setEnabled(false);
@@ -73,6 +75,7 @@ public class LoginLoginFragment extends Fragment {
                     login_button.setEnabled(false);
                     sign_up_button.setEnabled(false);
                     hideKeyboard();
+                    ((ActivityGA)getActivity()).sendGA("user", "login", "request");
                 }
             }
         });
@@ -112,9 +115,10 @@ public class LoginLoginFragment extends Fragment {
                 GoriPreferenceManager.getInstance(getActivity()).setMyProfileObject(userProfile);
                 GoriPreferenceManager.getInstance(getActivity()).setUsername(edit_text_username.getText().toString());
                 GoriPreferenceManager.getInstance(getActivity()).setPassword(edit_text_password.getText().toString());
-                Snackbar.with(getActivity())
-                        .text("Connect")
-                        .show(getActivity());
+                ((ActivityGA)getActivity()).sendGA("user", "login", "success");
+                ((ActivityGA)getActivity()).sendGA("user", "get following", "request");
+
+                Snackbar.with(getActivity()).text("Connect").show(getActivity());
                 String session = GoriPreferenceManager.getInstance(getActivity()).getSession();
                 ServerInterface api = GoriApplication.getInstance().getServerInterface();
                 api.getUserFollowings(session, userProfile.user.username, new Callback<ArrayList<UserProfile>>() {
@@ -131,6 +135,7 @@ public class LoginLoginFragment extends Fragment {
                                 ex.printStackTrace();
                             }
                         }
+                        ((ActivityGA)getActivity()).sendGA("user", "get following", "success");
                         Intent intent = new Intent(getActivity(), MainActivity.class);
                         startActivity(intent);
                         getActivity().finish();
@@ -139,6 +144,8 @@ public class LoginLoginFragment extends Fragment {
                     @Override
                     public void failure(RetrofitError error) {
 //                            showSnackbar("content image cancel failed!");
+                        ((ActivityGA)getActivity()).sendGA("user", "get following", "fail : " + error.getMessage());
+
                         Intent intent = new Intent(getActivity(), MainActivity.class);
                         startActivity(intent);
                         getActivity().finish();
@@ -147,16 +154,22 @@ public class LoginLoginFragment extends Fragment {
             } else if(STATUS == GoriConstants.STATUS.ERROR) {
                 switch(errorCode) {
                     case 203:
+                        ((ActivityGA)getActivity()).sendGA("user", "login", "fail : Username / Password 가 일치하지 않습니다.");
+
                         Snackbar.with(getActivity())
                                 .text("Username / Password 가 일치하지 않습니다.")
                                 .show(getActivity());
                         break;
                     case 204:
+                        ((ActivityGA)getActivity()).sendGA("user", "login", "fail : email 인증이 완료되지 않았습니다");
+
                         Snackbar.with(getActivity())
                                 .text("email 인증이 완료되지 않았습니다")
                                 .show(getActivity());
                         break;
                     case -1:
+                        ((ActivityGA)getActivity()).sendGA("user", "login", "fail : 네트워크 상태를 확인해 주세요.");
+
                         Snackbar.with(getActivity())
                                 .text("네트워크 상태를 확인해 주세요.")
                                 .show(getActivity());

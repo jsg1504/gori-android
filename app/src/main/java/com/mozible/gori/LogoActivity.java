@@ -10,6 +10,8 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 import com.mozible.gori.models.PostResult;
 import com.mozible.gori.tasks.LoginTask;
 import com.mozible.gori.models.UserProfile;
@@ -26,7 +28,7 @@ import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 
-public class LogoActivity extends AppCompatActivity {
+public class LogoActivity extends AppCompatActivity implements ActivityGA{
     private LoginTask mLoginTask;
     private UserDatabaseHelper mUserDatabaseHelper;
     @Override
@@ -52,7 +54,13 @@ public class LogoActivity extends AppCompatActivity {
             startActivity(intent);
             finish();
         }
+
+        Tracker tracker = ((GoriApplication) getApplication())
+                .getTracker(GoriApplication.TrackerName.APP_TRACKER);
+        tracker.setScreenName("LogoActivity");
+        tracker.send(new HitBuilders.AppViewBuilder().build());
     }
+
     private void startLoginTask(String username, String password) {
         mLoginTask = new LoginTask(this, username, password, mLoginTaskListener);
         mLoginTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
@@ -61,7 +69,7 @@ public class LogoActivity extends AppCompatActivity {
     public LoginTask.TaskListener mLoginTaskListener = new LoginTask.TaskListener() {
         @Override
         public void onPreExecute() {
-
+            sendGA("user", "login", "request");
         }
 
         @Override
@@ -71,6 +79,8 @@ public class LogoActivity extends AppCompatActivity {
                 Snackbar.with(LogoActivity.this)
                         .text("Connect")
                         .show(LogoActivity.this);
+                sendGA("user", "login", "success");
+                sendGA("user", "get following", "request");
                 String session = GoriPreferenceManager.getInstance(LogoActivity.this).getSession();
                 ServerInterface api = GoriApplication.getInstance().getServerInterface();
                 api.getUserFollowings(session, userProfile.user.username, new Callback<ArrayList<UserProfile>>() {
@@ -85,6 +95,8 @@ public class LogoActivity extends AppCompatActivity {
                                 ex.printStackTrace();
                             }
                         }
+                        sendGA("user", "get following", "success");
+
                         Intent intent = new Intent(LogoActivity.this, MainActivity.class);
                         startActivity(intent);
                         finish();
@@ -93,6 +105,8 @@ public class LogoActivity extends AppCompatActivity {
                     @Override
                     public void failure(RetrofitError error) {
 //                            showSnackbar("content image cancel failed!");
+                        sendGA("user", "get following", "fail : " + error.getMessage());
+
                         Intent intent = new Intent(LogoActivity.this, MainActivity.class);
                         startActivity(intent);
                         finish();
@@ -102,6 +116,7 @@ public class LogoActivity extends AppCompatActivity {
                 Intent intent;
                 switch(errorCode) {
                     case 203:
+                        sendGA("user", "login", "fail : Username / Password 가 일치하지 않습니다.");
                         Snackbar.with(LogoActivity.this)
                                 .text("Username / Password 가 일치하지 않습니다.")
                                 .show(LogoActivity.this);
@@ -110,6 +125,7 @@ public class LogoActivity extends AppCompatActivity {
                         finish();
                         break;
                     case 204:
+                        sendGA("user", "login", "fail : email 인증이 완료되지 않았습니다.");
                         Snackbar.with(LogoActivity.this)
                                 .text("email 인증이 완료되지 않았습니다.")
                                 .show(LogoActivity.this);
@@ -118,6 +134,7 @@ public class LogoActivity extends AppCompatActivity {
                         finish();
                         break;
                     case -1:
+                        sendGA("user", "login", "fail : 네트워크가 원활하지 않습니다.");
                         Snackbar.with(LogoActivity.this)
                                 .text("네트워크가 원활하지 않습니다.")
                                 .show(LogoActivity.this);
@@ -138,4 +155,18 @@ public class LogoActivity extends AppCompatActivity {
         }
     };
 
+    @Override
+    public void sendGA(String category, String action, String label) {
+        //GA
+        try {
+            Tracker tracker = ((GoriApplication) getApplication())
+                    .getTracker(GoriApplication.TrackerName.APP_TRACKER);
+            tracker.send(new HitBuilders.EventBuilder()
+                    .setCategory(category)
+                    .setAction(action)
+                    .setLabel(label).build());
+        } catch(Exception ex) {
+            ex.printStackTrace();
+        }
+    }
 }

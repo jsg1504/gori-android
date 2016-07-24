@@ -16,6 +16,7 @@ import android.widget.Toast;
 
 import com.handmark.pulltorefresh.library.PullToRefreshBase;
 import com.handmark.pulltorefresh.library.PullToRefreshListView;
+import com.mozible.gori.ActivityGA;
 import com.mozible.gori.ActivitySnack;
 import com.mozible.gori.GoriApplication;
 import com.mozible.gori.LogoActivity;
@@ -265,6 +266,8 @@ public class UserProfileFragment extends Fragment {
                     UserProfile userProfile = (UserProfile) mMainAdapter.getItem(position);
                     if(mFollowingUsers.containsKey(userProfile.user.id)) {
                         //do un follow
+                        ((ActivityGA)getActivity()).sendGA("user profile", "unfollow", "request");
+
                         String session = GoriPreferenceManager.getInstance(getActivity()).getSession();
                         ServerInterface api = GoriApplication.getInstance().getServerInterface();
                         api.unFollowUser(session, userProfile.user.username, "", new Callback<PostResult>() {
@@ -272,12 +275,14 @@ public class UserProfileFragment extends Fragment {
                             @Override
                             public void success(PostResult s, Response response) {
                                 if(s.status.toLowerCase().equals("success")) {
+                                    ((ActivityGA)getActivity()).sendGA("user profile", "unfollow", "success");
                                     mActivitySnack.showSnackbar("unfollow success!");
                                     mUserDatabaseHelper.deleteFollowingUser(mUserProfile.user.id);
                                     mFollowingUsers.remove(mUserProfile.user.id);
                                     mUserProfile.isFollow = false;
                                     mMainAdapter.notifyDataSetChanged();
                                 } else {
+                                    ((ActivityGA)getActivity()).sendGA("user profile", "unfollow", "fail : " + s.desc);
                                     mActivitySnack.showSnackbar(s.desc);
                                 }
                             }
@@ -285,11 +290,14 @@ public class UserProfileFragment extends Fragment {
                             @Override
                             public void failure(RetrofitError error) {
                                 mActivitySnack.showSnackbar("unfollow failed!");
+                                ((ActivityGA)getActivity()).sendGA("user profile", "unfollow", "fail : " + error.getMessage());
+
                                 Log.d(TAG, error.toString());
                             }
                         });
                     } else {
                         //do follow
+                        ((ActivityGA)getActivity()).sendGA("user profile", "follow", "request");
                         String session = GoriPreferenceManager.getInstance(getActivity()).getSession();
                         ServerInterface api = GoriApplication.getInstance().getServerInterface();
                         api.followUser(session, userProfile.user.username, "", new Callback<PostResult>() {
@@ -297,6 +305,7 @@ public class UserProfileFragment extends Fragment {
                             @Override
                             public void success(PostResult s, Response response) {
                                 if(s.status.toLowerCase().equals("success")) {
+                                    ((ActivityGA)getActivity()).sendGA("user profile", "follow", "success");
                                     mActivitySnack.showSnackbar("follow success!");
                                     mUserDatabaseHelper.insertFollowingUser(mUserProfile);
                                     mFollowingUsers.put(mUserProfile.user.id, mUserProfile.user.username);
@@ -304,12 +313,15 @@ public class UserProfileFragment extends Fragment {
                                     mMainAdapter.notifyDataSetChanged();
                                 } else {
                                     mActivitySnack.showSnackbar(s.desc);
+                                    ((ActivityGA)getActivity()).sendGA("user profile", "follow", "fail : " + s.desc);
                                 }
                             }
 
                             @Override
                             public void failure(RetrofitError error) {
                                 mActivitySnack.showSnackbar("follow failed!");
+                                ((ActivityGA)getActivity()).sendGA("user profile", "follow", "fail : " + error.getMessage());
+
                                 Log.d(TAG, error.toString());
                             }
                         });
@@ -333,6 +345,8 @@ public class UserProfileFragment extends Fragment {
                     startFilePicker();
                     break;
                 case R.id.profile_modify:
+                    ((ActivityGA)getActivity()).sendGA("user profile", "modify", "request move to user profile update fragment");
+
                     mActivitySnack.showSnackbar("profile_modify : " + v.getTag());
                     Intent i = new Intent(getActivity(), UserProfileUpdateActivity.class);
                     int position = (Integer)v.getTag();
@@ -347,20 +361,24 @@ public class UserProfileFragment extends Fragment {
                 case R.id.linearlayout_following_count_wrapper:
                     break;
                 case R.id.logout:
+                    ((ActivityGA)getActivity()).sendGA("user profile", "logout", "request");
                     ServerInterface api = GoriApplication.getInstance().getServerInterface();
                     String session = GoriPreferenceManager.getInstance(getActivity()).getSession();
                     api.logout(session, "", new Callback<PostResult>() {
                         @Override
                         public void success(PostResult s, Response response) {
+                            ((ActivityGA)getActivity()).sendGA("user profile", "logout", "success");
                             GoriPreferenceManager.getInstance(getActivity()).setUsername("");
                             GoriPreferenceManager.getInstance(getActivity()).setPassword("");
                             getActivity().finish();
                             Intent i = new Intent(getActivity(), LogoActivity.class);
                             startActivity(i);
+
                         }
 
                         @Override
                         public void failure(RetrofitError error) {
+                            ((ActivityGA)getActivity()).sendGA("user profile", "logout", "fail : " + error.getMessage());
                         }
                     });
                     break;
@@ -405,6 +423,7 @@ public class UserProfileFragment extends Fragment {
         });
     }
     public void startFilePicker() {
+        ((ActivityGA)getActivity()).sendGA("user profile", "update profile image", "pick image request");
         Crop.pickImage(getActivity());
     }
 
@@ -417,6 +436,7 @@ public class UserProfileFragment extends Fragment {
 //        }
 //    }
     public void beginCrop(Uri source) {
+        ((ActivityGA)getActivity()).sendGA("user profile", "update profile image", "crop image request");
         String username = GoriPreferenceManager.getInstance(getActivity()).getUsername();
         String imageName = username + System.currentTimeMillis() + ".jpg";
         Uri destination = Uri.fromFile(new File(getActivity().getCacheDir(), imageName));
@@ -427,6 +447,8 @@ public class UserProfileFragment extends Fragment {
         if (resultCode == Activity.RESULT_OK) {
             Uri uri = Crop.getOutput(result);
             try {
+                ((ActivityGA)getActivity()).sendGA("user profile", "update profile image", "cropped image update request");
+
                 TypedFile uploadFile = new TypedFile("multipart/form-data", new File(uri.getPath()));
                 String session = GoriPreferenceManager.getInstance(getActivity()).getSession();
                 ServerInterface api = GoriApplication.getInstance().getServerInterface();
@@ -435,15 +457,21 @@ public class UserProfileFragment extends Fragment {
                     @Override
                     public void success(PostResult s, Response response) {
                         if(s.status.toLowerCase().equals("success")) {
+                            ((ActivityGA)getActivity()).sendGA("user profile", "update profile image", "success");
+
                             mActivitySnack.showSnackbar("profile upload success!");
                         } else {
                             mActivitySnack.showSnackbar(s.desc);
+                            ((ActivityGA)getActivity()).sendGA("user profile", "update profile image", "fail : " + s.desc);
+
                         }
                     }
 
                     @Override
                     public void failure(RetrofitError error) {
                         mActivitySnack.showSnackbar("profile upload failed!");
+                        ((ActivityGA)getActivity()).sendGA("user profile", "update profile image", "fail : " + error.getMessage());
+
                         Log.d(TAG, error.toString());
                     }
                 });
@@ -451,7 +479,7 @@ public class UserProfileFragment extends Fragment {
                 ex.printStackTrace();
             }
         } else if (resultCode == Crop.RESULT_ERROR) {
-            Toast.makeText(getActivity(), Crop.getError(result).getMessage(), Toast.LENGTH_SHORT).show();
+            ((ActivityGA)getActivity()).sendGA("user profile", "update profile image", "fail : activity for result code error");
         }
     }
 }

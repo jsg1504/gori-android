@@ -1,7 +1,11 @@
 package com.mozible.gori;
 
 import android.app.Application;
+import android.content.Context;
+import android.support.multidex.MultiDex;
 
+import com.google.android.gms.analytics.GoogleAnalytics;
+import com.google.android.gms.analytics.Tracker;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.mozible.gori.utils.GoriConstants;
@@ -13,6 +17,7 @@ import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 
 import retrofit.RequestInterceptor;
@@ -30,11 +35,18 @@ public class GoriApplication extends Application {
     private ServerInterface api;
 
     private String endPoint;
+    private static final String PROPERTY_ID = "UA-81237581-1";
 
     @Override
     public void onCreate() {
         super.onCreate();
         GoriApplication.instance = this;
+    }
+
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        super.attachBaseContext(newBase);
+        MultiDex.install(this);
     }
 
     public void buildServerinterface() {
@@ -86,5 +98,30 @@ public class GoriApplication extends Application {
 
     public ServerInterface getServerInterface() {
         return api;
+    }
+
+    public enum TrackerName {
+        APP_TRACKER, // Tracker used only in this app.
+        GLOBAL_TRACKER, // Tracker used by all the apps from a company. eg:
+        // roll-up tracking.
+        ECOMMERCE_TRACKER, // Tracker used by all ecommerce transactions from a
+        // company.
+    }
+
+    HashMap<TrackerName, Tracker> mTrackers = new HashMap<TrackerName, Tracker>();
+
+    public synchronized Tracker getTracker(TrackerName trackerId) {
+        if (!mTrackers.containsKey(trackerId)) {
+            GoogleAnalytics analytics = GoogleAnalytics.getInstance(this);
+            Tracker t = (trackerId == TrackerName.APP_TRACKER) ? analytics
+                    .newTracker(PROPERTY_ID)
+                    : (trackerId == TrackerName.GLOBAL_TRACKER) ? analytics
+                    .newTracker(R.xml.global_tracker) : analytics
+                    .newTracker(R.xml.ecommerce_tracker);
+
+            t.enableAdvertisingIdCollection(true);
+            mTrackers.put(trackerId, t);
+        }
+        return mTrackers.get(trackerId);
     }
 }

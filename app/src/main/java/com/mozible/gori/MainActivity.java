@@ -17,6 +17,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 import com.mozible.gori.fragments.AllContentFragment;
 import com.mozible.gori.fragments.MainNewsfeedFragment;
 import com.mozible.gori.fragments.UserProfileFragment;
@@ -37,7 +39,7 @@ import retrofit.RetrofitError;
 import retrofit.client.Response;
 
 
-public class MainActivity extends AppCompatActivity implements ActivitySnack{
+public class MainActivity extends AppCompatActivity implements ActivitySnack, ActivityGA{
 
     private CoordinatorLayout coordinator;
     private Toolbar toolbar;
@@ -62,6 +64,11 @@ public class MainActivity extends AppCompatActivity implements ActivitySnack{
         setContentView(R.layout.activity_main);
         initView();
         initBottomBar(savedInstanceState);
+
+        Tracker tracker = ((GoriApplication) getApplication())
+                .getTracker(GoriApplication.TrackerName.APP_TRACKER);
+        tracker.setScreenName("MainActivity");
+        tracker.send(new HitBuilders.AppViewBuilder().build());
     }
 
     public void initBottomBar(Bundle savedInstanceState) {
@@ -151,20 +158,25 @@ public class MainActivity extends AppCompatActivity implements ActivitySnack{
             ServerInterface api = GoriApplication.getInstance().getServerInterface();
             int contentId = result.getExtras().getInt("CONTENT_ID", -1);
             if(contentId != -1 ){
+                sendGA("content", "upload cancel", "request, content id: " + contentId);
                 api.cancelUploadContent(session, contentId, "", new Callback<PostResult>() {
 
                     @Override
                     public void success(PostResult s, Response response) {
                         if(s.status.toLowerCase().equals("success")) {
+                            sendGA("content", "upload cancel", "success");
                             showSnackbar("content image cancel completed");
                         } else {
                             showSnackbar(s.desc);
+                            sendGA("content", "upload cancel", "fail : " + s.desc);
+
                         }
                     }
 
                     @Override
                     public void failure(RetrofitError error) {
                         showSnackbar("content image cancel failed!");
+                        sendGA("content", "upload cancel", "fail : " + error.getMessage());
                     }
                 });
             }
@@ -277,5 +289,20 @@ public class MainActivity extends AppCompatActivity implements ActivitySnack{
         transaction.replace(R.id.fragment_layout, newFragment);
 
         transaction.commit();
+    }
+
+    @Override
+    public void sendGA(String category, String action, String label) {
+        //GA
+        try {
+            Tracker tracker = ((GoriApplication) getApplication())
+                    .getTracker(GoriApplication.TrackerName.APP_TRACKER);
+            tracker.send(new HitBuilders.EventBuilder()
+                    .setCategory(category)
+                    .setAction(action)
+                    .setLabel(label).build());
+        } catch(Exception ex) {
+            ex.printStackTrace();
+        }
     }
 }

@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.mozible.gori.ActivityGA;
 import com.mozible.gori.LoginActivity;
 import com.mozible.gori.R;
 
@@ -38,6 +39,8 @@ public class LoginMainFragment extends Fragment {
         login_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                ((ActivityGA)getActivity()).sendGA("fragment", "move", "login fragment");
+
                 LoginActivity loginActivity = (LoginActivity)getActivity();
                 loginActivity.changeLoginFragment();
             }
@@ -48,6 +51,7 @@ public class LoginMainFragment extends Fragment {
         sign_up_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                ((ActivityGA)getActivity()).sendGA("fragment", "move", "signup fragment");
                 LoginActivity loginActivity = (LoginActivity)getActivity();
                 loginActivity.changeSignupFragment();
             }

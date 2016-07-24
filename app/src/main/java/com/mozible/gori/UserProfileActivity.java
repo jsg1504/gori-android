@@ -15,6 +15,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.widget.RelativeLayout;
 
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 import com.mozible.gori.fragments.LoginLoginFragment;
 import com.mozible.gori.fragments.LoginMainFragment;
 import com.mozible.gori.fragments.LoginSignupFragment;
@@ -22,7 +24,7 @@ import com.mozible.gori.fragments.UserProfileFragment;
 import com.mozible.gori.models.UserProfile;
 import com.mozible.gori.utils.GoriPreferenceManager;
 
-public class UserProfileActivity extends AppCompatActivity implements ActivitySnack{
+public class UserProfileActivity extends AppCompatActivity implements ActivitySnack, ActivityGA{
     private Fragment mUserProfileFragment;
     private Toolbar toolbar;
     private CoordinatorLayout coordinator;
@@ -32,6 +34,11 @@ public class UserProfileActivity extends AppCompatActivity implements ActivitySn
         setContentView(R.layout.activity_user_profile);
         UserProfile userProfile = UserProfile.getObjectFromJSonObject(getIntent().getExtras().getString("USER_PROFILE", ""));
         initViews(userProfile);
+
+        Tracker tracker = ((GoriApplication) getApplication())
+                .getTracker(GoriApplication.TrackerName.APP_TRACKER);
+        tracker.setScreenName("UserProfileActivity");
+        tracker.send(new HitBuilders.AppViewBuilder().build());
 
     }
 
@@ -54,6 +61,21 @@ public class UserProfileActivity extends AppCompatActivity implements ActivitySn
 
     public void showSnackbar(String text) {
         Snackbar.make(coordinator, text, Snackbar.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void sendGA(String category, String action, String label) {
+        //GA
+        try {
+            Tracker tracker = ((GoriApplication) getApplication())
+                    .getTracker(GoriApplication.TrackerName.APP_TRACKER);
+            tracker.send(new HitBuilders.EventBuilder()
+                    .setCategory(category)
+                    .setAction(action)
+                    .setLabel(label).build());
+        } catch(Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
 }
