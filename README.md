@@ -2,9 +2,10 @@
 
 ## 고리는 사용자간 사진을 공유하는 서비스입니다.
 ### Play Store : https://play.google.com/store/apps/details?id=com.mozible.gori
-<img src="https://github.com/jhlee789/gori-android/blob/master/screen1.png" width="20%">
-<img src="https://github.com/jhlee789/gori-android/blob/master/screen2.png" width="20%">
-<img src="https://github.com/jhlee789/gori-android/blob/master/screen3.png" width="20%">
+<img src="https://github.com/jhlee789/gori-android/blob/master/graphic_image.png" width="100%">
+<img src="https://github.com/jhlee789/gori-android/blob/master/screen1.png" width="30%">
+<img src="https://github.com/jhlee789/gori-android/blob/master/screen2.png" width="30%">
+<img src="https://github.com/jhlee789/gori-android/blob/master/screen3.png" width="30%">
 ### 고리에서 구현된 기능은 다음과 같습니다.
 
 > 로그인 페이지
