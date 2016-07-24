@@ -35,7 +35,7 @@ public class GoriApplication extends Application {
     private ServerInterface api;
 
     private String endPoint;
-    private static final String PROPERTY_ID = "UA-81237581-1";
+    private static final String PROPERTY_ID = "GA_ID";
 
     @Override
     public void onCreate() {
